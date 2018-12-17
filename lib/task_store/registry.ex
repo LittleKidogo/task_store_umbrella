@@ -86,5 +86,5 @@ defmodule TaskStore.Registry do
   @doc """
   Handle unknown messages to ensure the process mailbox doesnt overflow 
   """
-  def handle_info(_, state), do: {:noreply, state)} 
+  def handle_info(_, state), do: {:noreply, state} 
 end 
