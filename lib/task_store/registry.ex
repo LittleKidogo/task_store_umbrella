@@ -81,5 +81,10 @@ defmodule TaskStore.Registry do
     {name, refs} = Map.pop(refs, ref)
     names = Map.delete(names, name)
     {:noreply, {names, refs}}
-  end 
+  end
+
+  @doc """
+  Handle unknown messages to ensure the process mailbox doesnt overflow 
+  """
+  def handle_info(_, state), do: {:noreply, state)} 
 end 
