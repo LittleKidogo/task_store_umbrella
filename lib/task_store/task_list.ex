@@ -28,4 +28,12 @@ defmodule TaskStore.TaskList do
   def put(task_list, task, time) do 
     Agent.update(task_list, &Map.put(&1, task, time))
   end 
+
+  @doc """
+  Deletes a task from a task list
+  """
+  @spec delete(pid(), String.t()) :: String.t() | any()
+  def delete(task_list, task) do 
+    Agent.get_and_update(task_list, &Map.pop(&1, task))
+  end 
 end   
