@@ -43,27 +43,43 @@ defmodule TaskStore.Registry do
   """
   @spec init(atom()) :: tuple()
   def init(:ok) do 
-    {:ok, %{}}
+    names = %{}
+    refs = %{}
+    {:ok, {names, refs}}
   end 
 
   @doc """
   Handles a synchrounous call to check for a `TaskStore.TaskList` pid using a string name 
   """
   @spec handle_call(tuple(), pid(), map()) :: tuple()
-  def handle_call({:lookup, name}, _from, names) do 
-    {:reply, Map.fetch(names, name), names}
+  def handle_call({:lookup, name}, _from, {names, _} = state) do 
+    {:reply, Map.fetch(names, name), state}
   end 
 
   @doc """
   Handles an asynchronous cast the create a `TaskStore.TaskList` and store the name and pid in the server 
   """
   @spec handle_cast(tuple(), map()) :: tuple()
-  def handle_cast({:create, name}, names) do 
+  def handle_cast({:create, name}, {names, refs}) do 
     if Map.has_key?(names, name) do 
       {:noreply, names}
     else 
       {:ok, task_list} = TaskList.start_link([])
-      {:noreply, Map.put(names, name, task_list)}
+      ref = Process.monitor(task_list)
+      refs = Map.put(refs, ref, name)
+      names = Map.put(names, name, task_list)
+      {:noreply, {names, refs}}
     end 
+  end 
+
+  @doc """
+  Handles an incoming message that signifies a bucket has just crashed, this enables us to clean up our state
+  and only serve relevant items 
+  """
+  @spec handle_info(tuple(), tuple()) :: tuple()
+  def handle_info({:DOWN, ref, :process, _pid, _reason}, {names, refs}) do 
+    {name, refs} = Map.pop(refs, ref)
+    names = Map.delete(names, name)
+    {:noreply, {names, refs}}
   end 
 end 
