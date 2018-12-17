@@ -7,8 +7,12 @@ defmodule TaskStore.TaskListTest do
     TaskList
   }
 
-  test "stores a task by its label" do 
+  setup do 
     {:ok, task_list} = TaskList.start_link([])
+    %{task_list: task_list}
+  end 
+
+  test "stores a task by its label", %{task_list: task_list} do 
     
     assert TaskList.get(task_list, "finish gardening") == nil 
 
