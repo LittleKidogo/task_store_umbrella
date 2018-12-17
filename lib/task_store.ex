@@ -1,18 +1,14 @@
 defmodule TaskStore do
   @moduledoc """
-  Documentation for TaskStore.
+  This module holds the application callback for the `TaskStore` application
   """
-
+  use Application 
+  
   @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> TaskStore.hello()
-      :world
-
+  This function starts our application supervisor
   """
-  def hello do
-    :world
-  end
+  @spec start(any(), any()) :: {:ok, pid()}
+  def start(_type, _args) do
+    TaskStore.Supervisor.start_link(name: TaskStore.Supervisor)
+  end 
 end
