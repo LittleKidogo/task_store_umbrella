@@ -9,7 +9,7 @@ defmodule TaskStore.TaskList do
   Starts a new task list
   """
   @spec start_link(list(any())) :: {:ok, pid()} | {:error, any()}
-  def start_link(opts) do
+  def start_link(_opts) do
     Agent.start_link(fn -> %{} end)
   end
 
