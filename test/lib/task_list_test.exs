@@ -29,5 +29,9 @@ defmodule TaskStore.TaskListTest do
     TaskList.delete(task_list, @task) 
 
     assert TaskList.get(task_list, @task) == nil
-  end  
+  end
+
+  test "are temporary workers" do 
+    assert Supervisor.child_spec(TaskList, []).restart == :temporary
+  end   
 end 
