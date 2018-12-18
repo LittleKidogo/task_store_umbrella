@@ -17,10 +17,11 @@ defmodule TaskStore.Supervisor do
   """
   def init(:ok) do 
     children = [
+      {DynamicSupervisor, name: TaskStore.TaskListSupervisor, strategy: :one_for_one},
       {TaskStore.Registry, name: TaskStore.Registry}
     ]
 
     # set the strategy to `one_for_one` so whichever child that dies is the only one that is restarted
-    Supervisor.init(children, strategy: :one_for_one)
+    Supervisor.init(children, strategy: :one_for_all)
   end 
 end 
