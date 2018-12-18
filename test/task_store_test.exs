@@ -3,7 +3,4 @@ defmodule TaskStoreTest do
   use ExUnit.Case
   doctest TaskStore
 
-  test "greets the world" do
-    assert TaskStore.hello() == :world
-  end
 end
