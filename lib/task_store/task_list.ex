@@ -3,7 +3,7 @@ defmodule TaskStore.TaskList do
   This module handles interaction with task lists in the `TaskStore` application 
   use this module to create new task lists update them and delete them :)
   """
-  use Agent 
+  use Agent, restart: :temporary
 
   @doc """
   Starts a new task list
