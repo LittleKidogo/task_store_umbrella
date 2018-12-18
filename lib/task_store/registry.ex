@@ -16,7 +16,8 @@ defmodule TaskStore.Registry do
   """
   @spec start_link(list(any())) :: {:ok, pid()} | {:error, any()}
   def start_link(opts) do 
-    GenServer.start_link(__MODULE__, :ok, opts)
+    server = Keyword.fetch!(opts, :name)
+    GenServer.start_link(__MODULE__, server, opts)
   end 
 
   @doc """
@@ -24,7 +25,10 @@ defmodule TaskStore.Registry do
   """
   @spec lookup(pid(), String.t()) :: {:ok, pid()} | :error
   def lookup(server, name) do 
-    GenServer.call(server, {:lookup, name})
+    case :ets.lookup(server, name) do 
+      [{^name, pid}] -> {:ok, pid}
+      [] -> :error
+    end 
   end 
 
   @doc """
@@ -33,7 +37,7 @@ defmodule TaskStore.Registry do
   """
   @spec create(pid(), String.t()) :: :ok
   def create(server, task_list_name) do 
-    GenServer.cast(server, {:create, task_list_name})
+    GenServer.call(server, {:create, task_list_name})
   end 
 
 
@@ -41,34 +45,29 @@ defmodule TaskStore.Registry do
   @doc """
   Initializes the server using passed in options 
   """
-  @spec init(atom()) :: tuple()
-  def init(:ok) do 
-    names = %{}
+  @spec init(any()) :: tuple()
+  def init(name) do 
+    names = :ets.new(name, [:named_table, read_concurrency: true])
     refs = %{}
     {:ok, {names, refs}}
   end 
 
-  @doc """
-  Handles a synchrounous call to check for a `TaskStore.TaskList` pid using a string name 
-  """
-  @spec handle_call(tuple(), pid(), map()) :: tuple()
-  def handle_call({:lookup, name}, _from, {names, _} = state) do 
-    {:reply, Map.fetch(names, name), state}
-  end 
+ 
 
   @doc """
   Handles an asynchronous cast the create a `TaskStore.TaskList` and store the name and pid in the server 
   """
-  @spec handle_cast(tuple(), map()) :: tuple()
-  def handle_cast({:create, name}, {names, refs}) do 
-    if Map.has_key?(names, name) do 
-      {:noreply, names}
-    else 
-      {:ok, task_list} = DynamicSupervisor.start_child(TaskStore.TaskListSupervisor, TaskList)
-      ref = Process.monitor(task_list)
-      refs = Map.put(refs, ref, name)
-      names = Map.put(names, name, task_list)
-      {:noreply, {names, refs}}
+  @spec handle_call(tuple(), pid(), tuple()) :: tuple()
+  def handle_call({:create, name}, _from, {names, refs}) do 
+    case lookup(names, name) do 
+      {:ok, task_list} ->  {:reply, task_list, {names, refs}}
+
+      :error -> 
+        {:ok, task_list} = DynamicSupervisor.start_child(TaskStore.TaskListSupervisor, TaskList)
+        ref = Process.monitor(task_list)
+        refs = Map.put(refs, ref, name)
+        :ets.insert(names, {name, task_list})
+        {:reply, task_list, {names, refs}}
     end 
   end 
 
@@ -79,7 +78,7 @@ defmodule TaskStore.Registry do
   @spec handle_info(tuple(), tuple()) :: tuple()
   def handle_info({:DOWN, ref, :process, _pid, _reason}, {names, refs}) do 
     {name, refs} = Map.pop(refs, ref)
-    names = Map.delete(names, name)
+    :ets.delete(names, name)
     {:noreply, {names, refs}}
   end
 
