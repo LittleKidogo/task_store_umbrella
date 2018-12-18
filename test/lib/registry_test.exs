@@ -33,6 +33,15 @@ defmodule TaskStore.RegistryTest do
       {:ok, task_list} = Registry.lookup(registry, @task_list)
       Agent.stop(task_list)
       assert Registry.lookup(registry, @task_list) == :error
-    end 
+    end
+
+    test "removed task_list on crash", %{registry: registry} do 
+      Registry.create(registry, @task_list)
+      {:ok, task_list} = Registry.lookup(registry, @task_list)
+
+      # muahahaha crash the TaskList 
+      Agent.stop(task_list, :shutdown)
+      assert Registry.lookup(registry, @task_list) == :error
+    end  
   end 
 end 
