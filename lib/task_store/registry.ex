@@ -7,7 +7,7 @@ defmodule TaskStore.Registry do
   """
   use GenServer 
   alias TaskStore.{
-    TaskList
+    TaskList 
   }
   ## Client API for the server 
   
@@ -64,7 +64,7 @@ defmodule TaskStore.Registry do
     if Map.has_key?(names, name) do 
       {:noreply, names}
     else 
-      {:ok, task_list} = TaskList.start_link([])
+      {:ok, task_list} = DynamicSupervisor.start_child(TaskStore.TaskListSupervisor, TaskList)
       ref = Process.monitor(task_list)
       refs = Map.put(refs, ref, name)
       names = Map.put(names, name, task_list)
