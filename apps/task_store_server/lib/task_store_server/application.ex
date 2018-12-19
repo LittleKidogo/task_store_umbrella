@@ -7,7 +7,7 @@ defmodule TaskStoreServer.Application do
 
   def start(_type, _args) do
     # List all child processes to be supervised
-    port = String.to_integer(System.get_env("PORT") || 9090)
+    port = String.to_integer(System.get_env("PORT") || "9090")
     children = [
       {Task.Supervisor, name: TaskStoreServer.TaskSupervisor},
       Supervisor.child_spec({Task, fn -> TaskStoreServer.accept(port) end}, restart: :permanent)
