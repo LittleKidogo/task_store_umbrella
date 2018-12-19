@@ -19,6 +19,7 @@ defmodule TaskStore.MixProject do
   def application do
     [
       extra_applications: [:logger],
+      env: [routing_table: []],
       mod: {TaskStore, []}
     ]
   end
