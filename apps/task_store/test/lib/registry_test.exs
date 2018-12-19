@@ -46,6 +46,7 @@ defmodule TaskStore.RegistryTest do
       assert Registry.lookup(registry, @task_list) == :error
     end  
 
+    @tag :capture_log
     test "task_list can crash any time", %{registry: registry} do 
       Registry.create(registry, @task_list)
       {:ok, task_list} = Registry.lookup(registry, @task_list)
