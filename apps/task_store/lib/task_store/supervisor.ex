@@ -18,7 +18,8 @@ defmodule TaskStore.Supervisor do
   def init(:ok) do 
     children = [
       {DynamicSupervisor, name: TaskStore.TaskListSupervisor, strategy: :one_for_one},
-      {TaskStore.Registry, name: TaskStore.Registry}
+      {TaskStore.Registry, name: TaskStore.Registry}, 
+      {Task.Supervisor, name: TaskStore.RouterTasks}
     ]
 
     # set the strategy to `one_for_one` so whichever child that dies is the only one that is restarted
