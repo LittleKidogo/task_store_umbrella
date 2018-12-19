@@ -7,9 +7,10 @@ defmodule TaskStoreServer.Application do
 
   def start(_type, _args) do
     # List all child processes to be supervised
+    port = String.to_integer(System.get_env("PORT") || 9090)
     children = [
-      # Starts a worker by calling: TaskStoreServer.Worker.start_link(arg)
-      # {TaskStoreServer.Worker, arg},
+      {Task.Supervisor, name: TaskStoreServer.TaskSupervisor},
+      Supervisor.child_spec({Task, fn -> TaskStoreServer.accept(port) end}, restart: :permanent)
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
