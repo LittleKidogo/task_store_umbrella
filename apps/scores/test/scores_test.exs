@@ -9,13 +9,13 @@ defmodule ScoresTest do
 
   test " initial scores is empty" do
     {:ok, pid} = Scores.start
-    assert Scores.show(pid) == %{}
+    assert Scores.show(pid) == %{current_score: 0, last_played: "never", lifetime_score: 0}
   end
 
   test "adds a key value score to state" do
     {:ok, pid} = Scores.start
     assert Scores.put(pid, :current_score, 10) == :ok
-    assert Scores.show(pid) == %{current_score: 10}
+    assert Scores.show(pid) == %{current_score: 10, last_played: 10, lifetime_score: 10}
   end
 
   test "gets the value of given key from the state" do
@@ -24,5 +24,4 @@ defmodule ScoresTest do
     assert Scores.put(pid, :current_score, 219) == :ok
     assert Scores.get(pid, :lifetime_score) == 229
   end
-
 end
